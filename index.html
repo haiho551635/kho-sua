@@ -30,7 +30,7 @@
   .layout{display:grid;grid-template-columns:360px 1fr;gap:0;min-height:calc(100vh - 56px)}
 
   /* LEFT PANEL */
-  .panel-left{background:var(--surface);border-right:1px solid var(--border);padding:20px;display:flex;flex-direction:column;gap:16px}
+  .panel-left{background:var(--surface);border-right:1px solid var(--border);padding:20px;display:flex;flex-direction:column;gap:16px;position:sticky;top:56px;height:calc(100vh - 56px);overflow:hidden}
   .panel-title{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
 
   /* SEARCH BOX */
@@ -195,6 +195,7 @@
     <div class="tabs">
       <div class="tab active" onclick="switchTab('history',this)">Lịch sử giao dịch</div>
       <div class="tab" onclick="switchTab('tonkho',this)">Tồn kho</div>
+      <div class="tab" onclick="switchTab('huongdan',this)">❓ Hướng dẫn</div>
     </div>
 
     <!-- HISTORY TAB -->
@@ -215,12 +216,12 @@
         <table>
           <thead>
             <tr>
-              <th>THỜI GIAN</th>
+              <th style="width:80px">GIỜ</th>
               <th>MẶT HÀNG</th>
-              <th>LOẠI</th>
-              <th style="text-align:right">SỐ LƯỢNG</th>
+              <th style="width:70px">LOẠI</th>
+              <th style="text-align:right;width:80px">SỐ LƯỢNG</th>
               <th>GHI CHÚ</th>
-              <th></th>
+              <th style="width:36px"></th>
             </tr>
           </thead>
           <tbody id="history-body"></tbody>
@@ -231,6 +232,91 @@
     <!-- TON KHO TAB -->
     <div id="tab-tonkho" style="display:none">
       <div class="summary-grid" id="tonkho-grid"></div>
+    </div>
+
+    <!-- HUONG DAN TAB -->
+    <div id="tab-huongdan" style="display:none;max-width:680px">
+      <div style="display:flex;flex-direction:column;gap:10px">
+
+        <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">Cách ghi giao dịch</div>
+
+        <div style="display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+          <div style="min-width:28px;height:28px;border-radius:50%;background:var(--green-light);color:var(--green-dark);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">1</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:4px">Tìm và chọn mặt hàng</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.6">Gõ tên vào ô tìm kiếm (VD: "ensure", "pedi", "nan"...) → danh sách lọc ngay. Nhấn vào tên sản phẩm để chọn — số tồn kho hiện tại hiển thị ngay cạnh.</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+          <div style="min-width:28px;height:28px;border-radius:50%;background:var(--green-light);color:var(--green-dark);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">2</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:4px">Điền số lượng và ghi chú</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.6">Nhập số lượng (chỉ nhập số dương). Ghi chú không bắt buộc — ghi nhanh như "gửi xe van", "xuat chi hang"...</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+          <div style="min-width:28px;height:28px;border-radius:50%;background:var(--green-light);color:var(--green-dark);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">3</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:6px">Nhấn Nhập kho hoặc Xuất kho</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.8">
+              <span style="display:inline-block;padding:2px 10px;border-radius:20px;background:var(--green-light);color:var(--green-dark);font-weight:600;font-size:12px;margin-right:6px">↓ NHẬP KHO</span>hàng về kho, tồn cộng thêm<br>
+              <span style="display:inline-block;padding:2px 10px;border-radius:20px;background:var(--orange-light);color:var(--orange-dark);font-weight:600;font-size:12px;margin-right:6px;margin-top:4px">↑ XUẤT KHO</span>hàng ra khỏi kho, tồn trừ đi
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin:10px 0 2px">Tính năng khác</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">📊 Tab Tồn kho</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6">Xem số lượng hiện tại của tất cả mặt hàng. Xanh = còn hàng, đỏ/cam = âm kho.</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">🔍 Lọc lịch sử</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6">Nhấn nút Nhập / Xuất / Tất cả ở trên bảng để lọc theo loại giao dịch.</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">📋 Copy ra Excel</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6">Nhấn "Copy ra Excel" → mở file gốc → chọn ô trống cuối bảng → Ctrl+V. Khớp đúng 4 cột.</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">📂 Import Excel</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6">Nhấn "Import Excel" → chọn file .xlsx → app tự đọc và cộng dồn, không trùng dữ liệu cũ.</div>
+          </div>
+        </div>
+
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:4px">💾 Dữ liệu lưu ở đâu?</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.6">Tự động lưu vào trình duyệt (localStorage). Tắt tab hay tắt máy vẫn không mất. Nhưng nếu xóa cache trình duyệt hoặc đổi máy thì mất — nên copy ra Excel định kỳ để backup.</div>
+        </div>
+
+        <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin:10px 0 2px">Phím tắt</div>
+
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)">
+            <span style="background:var(--bg);border:1px solid var(--border2);border-radius:4px;padding:3px 8px;font-size:12px;font-family:monospace">Ctrl</span>
+            <span style="color:var(--text3)">+</span>
+            <span style="background:var(--bg);border:1px solid var(--border2);border-radius:4px;padding:3px 8px;font-size:12px;font-family:monospace">Enter</span>
+            <span style="font-size:13px;color:var(--text2)">Nhập kho nhanh (sau khi đã chọn hàng và điền số lượng)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)">
+            <span style="background:var(--bg);border:1px solid var(--border2);border-radius:4px;padding:3px 8px;font-size:12px;font-family:monospace">Ctrl</span>
+            <span style="color:var(--text3)">+</span>
+            <span style="background:var(--bg);border:1px solid var(--border2);border-radius:4px;padding:3px 8px;font-size:12px;font-family:monospace">Shift</span>
+            <span style="color:var(--text3)">+</span>
+            <span style="background:var(--bg);border:1px solid var(--border2);border-radius:4px;padding:3px 8px;font-size:12px;font-family:monospace">Enter</span>
+            <span style="font-size:13px;color:var(--text2)">Xuất kho nhanh</span>
+          </div>
+        </div>
+
+        <div style="background:#E6F1FB;border-radius:var(--radius-sm);padding:12px 16px;font-size:13px;color:#185FA5;line-height:1.6;margin-top:4px">
+          <strong>Mẹo làm nhanh:</strong> Gõ 2-3 chữ để tìm hàng → Tab sang ô số lượng → điền số → Ctrl+Enter hoặc Ctrl+Shift+Enter. Không cần dùng chuột.
+        </div>
+
+      </div>
     </div>
 
   </div>
@@ -350,22 +436,53 @@ function renderHistory() {
     return;
   }
 
-  tbody.innerHTML = filtered.map(function(e) {
-    var qtyDisplay = e.type === 'NHẬP'
-      ? '<span class="qty-pos">+'+e.qty+'</span>'
-      : '<span class="qty-neg">-'+e.qty+'</span>';
-    var badge = e.type === 'NHẬP'
-      ? '<span class="badge badge-nhap">NHẬP</span>'
-      : '<span class="badge badge-xuat">XUẤT</span>';
-    return '<tr>'+
-      '<td style="color:#A8A7A2;white-space:nowrap;font-size:12px">'+e.time+'</td>'+
-      '<td style="font-weight:500">'+e.product+'</td>'+
-      '<td>'+badge+'</td>'+
-      '<td style="text-align:right">'+qtyDisplay+'</td>'+
-      '<td style="color:#6B6A65">'+e.note+'</td>'+
-      '<td><button class="del-btn" onclick="deleteEntry('+e.id+')" title="Xóa">✕</button></td>'+
+  // Group by date (dd/mm/yyyy)
+  var groups = {};
+  var groupOrder = [];
+  filtered.forEach(function(e) {
+    var day = e.time.split(' ')[0];
+    if (!groups[day]) { groups[day] = []; groupOrder.push(day); }
+    groups[day].push(e);
+  });
+
+  var rows = '';
+  groupOrder.forEach(function(day) {
+    var entries = groups[day];
+    var dayNhap = entries.filter(function(e){return e.type==='NHẬP';}).reduce(function(s,e){return s+e.qty;},0);
+    var dayXuat = entries.filter(function(e){return e.type==='XUẤT';}).reduce(function(s,e){return s+e.qty;},0);
+
+    // Day header row
+    rows += '<tr style="background:#F0F4FF">'+
+      '<td colspan="3" style="padding:8px 14px;font-weight:600;font-size:12px;color:#1A1A18;border-top:2px solid #C8C6BE">'+
+        '📅 '+day+
+      '</td>'+
+      '<td colspan="3" style="padding:8px 14px;text-align:right;border-top:2px solid #C8C6BE;font-size:12px">'+
+        (dayNhap>0?'<span style="color:var(--green);font-weight:600;margin-right:12px">↓ Nhập: +'+dayNhap+'</span>':'')+
+        (dayXuat>0?'<span style="color:var(--orange);font-weight:600">↑ Xuất: -'+dayXuat+'</span>':'')+
+      '</td>'+
     '</tr>';
-  }).join('');
+
+    // Entry rows
+    entries.forEach(function(e) {
+      var qtyDisplay = e.type === 'NHẬP'
+        ? '<span class="qty-pos">+'+e.qty+'</span>'
+        : '<span class="qty-neg">-'+e.qty+'</span>';
+      var badge = e.type === 'NHẬP'
+        ? '<span class="badge badge-nhap">NHẬP</span>'
+        : '<span class="badge badge-xuat">XUẤT</span>';
+      var timeOnly = e.time.split(' ')[1] || '';
+      rows += '<tr>'+
+        '<td style="color:#A8A7A2;white-space:nowrap;font-size:12px;padding-left:20px">'+timeOnly+'</td>'+
+        '<td style="font-weight:500">'+e.product+'</td>'+
+        '<td>'+badge+'</td>'+
+        '<td style="text-align:right">'+qtyDisplay+'</td>'+
+        '<td style="color:#6B6A65">'+e.note+'</td>'+
+        '<td><button class="del-btn" onclick="deleteEntry('+e.id+')" title="Xóa">✕</button></td>'+
+      '</tr>';
+    });
+  });
+
+  tbody.innerHTML = rows;
 }
 
 // ===== TON KHO =====
@@ -374,37 +491,91 @@ function renderTonKho() {
   var allProducts = [];
   PRODUCTS.forEach(function(g){ g.items.forEach(function(p){ allProducts.push(p); }); });
 
-  var stockMap = {};
-  allProducts.forEach(function(p){ stockMap[p] = getStock(p, data); });
+  var rows = [];
+  allProducts.forEach(function(p) {
+    var nhap = data.filter(function(e){return e.product===p && e.type==='NHẬP';}).reduce(function(s,e){return s+e.qty;},0);
+    var xuat = data.filter(function(e){return e.product===p && e.type==='XUẤT';}).reduce(function(s,e){return s+e.qty;},0);
+    var ton = nhap - xuat;
+    if (nhap===0 && xuat===0) return;
+    rows.push({p:p, nhap:nhap, xuat:xuat, ton:ton});
+  });
 
-  // Only show products that have any activity
-  var active = allProducts.filter(function(p){ return stockMap[p] !== 0; });
-  if (!active.length) active = allProducts.slice(0,20);
+  rows.sort(function(a,b){ return b.ton - a.ton; });
 
-  var html = active.map(function(p) {
-    var s = stockMap[p];
-    var cls = s > 0 ? 'qty-pos' : (s < 0 ? 'qty-neg' : '');
-    return '<div class="scard">'+
-      '<div class="scard-name">'+p+'</div>'+
-      '<div class="scard-val '+cls+'">'+s+'</div>'+
-      '<div class="scard-sub">đơn vị tồn</div>'+
-    '</div>';
-  }).join('');
+  if (!rows.length) {
+    document.getElementById('tonkho-grid').innerHTML = '<div class="empty">Chưa có dữ liệu</div>';
+    return;
+  }
 
-  document.getElementById('tonkho-grid').innerHTML = html || '<div class="empty">Chưa có dữ liệu</div>';
+  var totalNhap = rows.reduce(function(s,r){return s+r.nhap;},0);
+  var totalXuat = rows.reduce(function(s,r){return s+r.xuat;},0);
+  var totalTon  = rows.reduce(function(s,r){return s+r.ton;},0);
+  var maxNhap   = Math.max.apply(null, rows.map(function(r){return r.nhap;}));
+
+  // Summary cards
+  var html = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">';
+  html += '<div style="background:var(--green-light);border-radius:var(--radius);padding:14px 16px">';
+  html +=   '<div style="font-size:11px;color:var(--green-dark);font-weight:600;letter-spacing:.06em;margin-bottom:6px">TỔNG NHẬP</div>';
+  html +=   '<div style="font-size:26px;font-weight:700;color:var(--green)">'+totalNhap+'</div></div>';
+  html += '<div style="background:var(--orange-light);border-radius:var(--radius);padding:14px 16px">';
+  html +=   '<div style="font-size:11px;color:var(--orange-dark);font-weight:600;letter-spacing:.06em;margin-bottom:6px">TỔNG XUẤT</div>';
+  html +=   '<div style="font-size:26px;font-weight:700;color:var(--orange)">'+totalXuat+'</div></div>';
+  html += '<div style="background:'+(totalTon>=0?'#E1F5EE':'#FAECE7')+';border-radius:var(--radius);padding:14px 16px">';
+  html +=   '<div style="font-size:11px;color:'+(totalTon>=0?'var(--green-dark)':'var(--orange-dark)')+';font-weight:600;letter-spacing:.06em;margin-bottom:6px">TỒN KHO RÒNG</div>';
+  html +=   '<div style="font-size:26px;font-weight:700;color:'+(totalTon>=0?'var(--green)':'var(--orange)')+'">'+totalTon+'</div></div>';
+  html += '</div>';
+
+  // Table header
+  html += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">';
+  html += '<div style="display:grid;grid-template-columns:1fr 100px 100px 110px;gap:0;background:var(--bg);border-bottom:1px solid var(--border);padding:10px 16px">';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.07em">MẶT HÀNG</div>';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--green-dark);letter-spacing:.07em;text-align:right">NHẬP</div>';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--orange-dark);letter-spacing:.07em;text-align:right">XUẤT</div>';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.07em;text-align:right">TỒN KHO</div>';
+  html += '</div>';
+
+  rows.forEach(function(r, i) {
+    var tonColor = r.ton > 0 ? 'var(--green)' : (r.ton < 0 ? 'var(--orange)' : 'var(--text3)');
+    var barPct = maxNhap > 0 ? Math.round(r.nhap / maxNhap * 100) : 0;
+    var bg = i % 2 === 0 ? 'var(--surface)' : '#FAFAF8';
+
+    html += '<div style="display:grid;grid-template-columns:1fr 100px 100px 110px;gap:0;background:'+bg+';border-bottom:1px solid var(--border);padding:10px 16px;align-items:center">';
+
+    // Product name + mini bar
+    html += '<div>';
+    html +=   '<div style="font-size:13px;font-weight:500;color:var(--text);line-height:1.4;margin-bottom:4px">'+r.p+'</div>';
+    html +=   '<div style="height:3px;background:var(--border);border-radius:2px;width:100%">';
+    html +=     '<div style="height:3px;background:var(--green);border-radius:2px;width:'+barPct+'%"></div>';
+    html +=   '</div>';
+    html += '</div>';
+
+    // Nhap
+    html += '<div style="text-align:right;font-size:13px;color:var(--green);font-weight:500">+'+r.nhap+'</div>';
+    // Xuat
+    html += '<div style="text-align:right;font-size:13px;color:var(--orange);font-weight:500">-'+r.xuat+'</div>';
+    // Ton
+    html += '<div style="text-align:right;font-size:16px;font-weight:700;color:'+tonColor+'">'+r.ton+'</div>';
+
+    html += '</div>';
+  });
+
+  html += '</div>';
+  document.getElementById('tonkho-grid').innerHTML = html;
 }
 
 // ===== HEADER STATS =====
 function renderHeaderStats() {
   var data = loadData();
-  var today = new Date().toLocaleDateString('vi-VN').split('/').reverse().join('-');
-  var todayData = data.filter(function(e){ return e.time.includes('/'+new Date().getFullYear()); });
-  
-  var nhap = data.filter(function(e){ return e.type==='NHẬP'; }).reduce(function(s,e){ return s+e.qty; },0);
-  var xuat = data.filter(function(e){ return e.type==='XUẤT'; }).reduce(function(s,e){ return s+e.qty; },0);
+  var d = new Date();
+  var pad = function(n){return n<10?'0'+n:n};
+  var todayStr = pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear();
 
-  document.getElementById('h-nhap').textContent = nhap;
-  document.getElementById('h-xuat').textContent = xuat;
+  var todayData = data.filter(function(e){ return e.time.startsWith(todayStr); });
+  var nhapToday = todayData.filter(function(e){return e.type==='NHẬP';}).reduce(function(s,e){return s+e.qty;},0);
+  var xuatToday = todayData.filter(function(e){return e.type==='XUẤT';}).reduce(function(s,e){return s+e.qty;},0);
+
+  document.getElementById('h-nhap').textContent = nhapToday;
+  document.getElementById('h-xuat').textContent = xuatToday;
   document.getElementById('h-gd').textContent = data.length;
 }
 
@@ -449,6 +620,7 @@ function switchTab(tab, el) {
   el.classList.add('active');
   document.getElementById('tab-history').style.display = tab==='history'?'block':'none';
   document.getElementById('tab-tonkho').style.display = tab==='tonkho'?'block':'none';
+  document.getElementById('tab-huongdan').style.display = tab==='huongdan'?'block':'none';
   if (tab==='tonkho') renderTonKho();
 }
 
