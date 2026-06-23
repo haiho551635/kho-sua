@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kho Sữa — Nhập Xuất</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --green:#1D9E75;--green-light:#E1F5EE;--green-dark:#0F6E56;
+    --orange:#D85A30;--orange-light:#FAECE7;--orange-dark:#993C1D;
+    --bg:#F7F6F3;--surface:#fff;--border:#E2E0DA;--border2:#C8C6BE;
+    --text:#1A1A18;--text2:#6B6A65;--text3:#A8A7A2;
+    --radius:10px;--radius-sm:6px;
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+  /* HEADER */
+  header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .logo{font-size:16px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+  .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+  .header-stats{display:flex;gap:20px}
+  .hstat{text-align:right}
+  .hstat-val{font-size:15px;font-weight:600}
+  .hstat-label{font-size:11px;color:var(--text3)}
+  .hstat-val.g{color:var(--green)}
+  .hstat-val.o{color:var(--orange)}
+
+  /* LAYOUT */
+  .layout{display:grid;grid-template-columns:360px 1fr;gap:0;min-height:calc(100vh - 56px)}
+
+  /* LEFT PANEL */
+  .panel-left{background:var(--surface);border-right:1px solid var(--border);padding:20px;display:flex;flex-direction:column;gap:16px;position:sticky;top:56px;height:calc(100vh - 56px);overflow:hidden}
+  .panel-title{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+
+  /* SEARCH BOX */
+  .search-wrap{position:relative}
+  .search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3)}
+  #search{width:100%;padding:9px 10px 9px 34px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:14px;color:var(--text);outline:none}
+  #search:focus{border-color:var(--green)}
+
+  /* PRODUCT LIST */
+  .product-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:2px;max-height:calc(100vh - 300px)}
+  .group-label{font-size:11px;font-weight:600;color:var(--text3);padding:8px 6px 4px;letter-spacing:.06em}
+  .product-item{padding:9px 10px;border-radius:var(--radius-sm);cursor:pointer;transition:background .1s;display:flex;align-items:center;justify-content:space-between;border:1px solid transparent}
+  .product-item:hover{background:var(--bg)}
+  .product-item.selected{background:var(--green-light);border-color:#9FE1CB}
+  .product-name{font-size:13px;color:var(--text);line-height:1.3}
+  .product-stock{font-size:12px;font-weight:600;padding:2px 8px;border-radius:20px}
+  .stock-pos{background:var(--green-light);color:var(--green-dark)}
+  .stock-zero{background:#F1EFE8;color:var(--text3)}
+  .stock-neg{background:var(--orange-light);color:var(--orange-dark)}
+
+  /* FORM */
+  .form-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:12px}
+  .selected-product{font-size:14px;font-weight:500;color:var(--text);padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);min-height:40px;display:flex;align-items:center}
+  .selected-product.placeholder{color:var(--text3);font-weight:400;font-style:italic}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px;font-weight:500}
+  input[type=number],input[type=text]{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;color:var(--text);background:var(--surface);outline:none}
+  input:focus{border-color:var(--green)}
+  .btn-group{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .btn{padding:12px;border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:14px;font-weight:600;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+  .btn-nhap{background:var(--green);color:#fff}
+  .btn-nhap:hover{background:var(--green-dark)}
+  .btn-xuat{background:var(--orange);color:#fff}
+  .btn-xuat:hover{background:var(--orange-dark)}
+  .btn:active{transform:scale(.98)}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+  /* RIGHT PANEL */
+  .panel-right{padding:20px;display:flex;flex-direction:column;gap:16px}
+
+  /* TONKHO SUMMARY */
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+  .scard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+  .scard-name{font-size:11px;color:var(--text3);margin-bottom:6px;line-height:1.3}
+  .scard-val{font-size:20px;font-weight:600}
+  .scard-sub{font-size:11px;color:var(--text3);margin-top:2px}
+
+  /* HISTORY */
+  .history-header{display:flex;align-items:center;justify-content:space-between}
+  .filter-bar{display:flex;gap:8px;align-items:center}
+  .filter-btn{padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--surface);font-size:12px;cursor:pointer;color:var(--text2)}
+  .filter-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
+  .filter-btn.nhap-f.active{background:var(--green);border-color:var(--green);color:#fff}
+  .filter-btn.xuat-f.active{background:var(--orange);border-color:var(--orange);color:#fff}
+
+  .action-btns{display:flex;gap:8px}
+  .act-btn{padding:6px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);font-size:12px;cursor:pointer;color:var(--text2);font-weight:500}
+  .act-btn:hover{border-color:var(--border2)}
+  .act-btn.danger{color:var(--orange)}
+
+  /* TABLE */
+  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;border-bottom:1px solid var(--border);background:var(--bg)}
+  td{padding:10px 14px;font-size:13px;border-bottom:1px solid var(--border);color:var(--text)}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#FAFAF8}
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+  .badge-nhap{background:var(--green-light);color:var(--green-dark)}
+  .badge-xuat{background:var(--orange-light);color:var(--orange-dark)}
+  .qty-pos{color:var(--green);font-weight:600}
+  .qty-neg{color:var(--orange);font-weight:600}
+  .del-btn{background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;border-radius:4px}
+  .del-btn:hover{color:var(--orange);background:var(--orange-light)}
+  .empty{text-align:center;padding:40px;color:var(--text3)}
+
+  /* TOAST */
+  #toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:var(--radius);font-size:13px;font-weight:500;color:#fff;opacity:0;transition:opacity .25s;z-index:999;pointer-events:none}
+  #toast.show{opacity:1}
+  #toast.g{background:var(--green)}
+  #toast.o{background:var(--orange)}
+  #toast.err{background:#E24B4A}
+
+  /* TABS */
+  .tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:16px}
+  .tab{padding:10px 16px;cursor:pointer;font-size:13px;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tab.active{color:var(--green);border-bottom-color:var(--green);font-weight:600}
+
+  @media(max-width:900px){
+    .layout{grid-template-columns:1fr}
+    .panel-left{border-right:none;border-bottom:1px solid var(--border)}
+    .product-list{max-height:200px}
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    Kho Sữa
+  </div>
+  <div class="header-stats">
+    <div class="hstat">
+      <div class="hstat-val g" id="h-nhap">0</div>
+      <div class="hstat-label">Nhập hôm nay</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val o" id="h-xuat">0</div>
+      <div class="hstat-label">Xuất hôm nay</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val" id="h-gd">0</div>
+      <div class="hstat-label">Giao dịch</div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- LEFT: FORM + PRODUCT PICKER -->
+  <div class="panel-left">
+    <div>
+      <div class="panel-title">Ghi giao dịch</div>
+    </div>
+
+    <div class="form-card">
+      <div id="selected-display" class="selected-product placeholder">← Chọn mặt hàng bên dưới</div>
+      <div class="form-row">
+        <div>
+          <label>Số lượng</label>
+          <input type="number" id="qty" min="1" placeholder="0" />
+        </div>
+        <div>
+          <label>Ghi chú</label>
+          <input type="text" id="note" placeholder="VD: Gửi xe van..." />
+        </div>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-nhap" id="btn-nhap" onclick="addEntry('NHẬP')" disabled>
+          ↓ NHẬP KHO
+        </button>
+        <button class="btn btn-xuat" id="btn-xuat" onclick="addEntry('XUẤT')" disabled>
+          ↑ XUẤT KHO
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel-title" style="margin-bottom:8px">Chọn mặt hàng</div>
+      <div class="search-wrap" style="margin-bottom:8px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="search" placeholder="Tìm nhanh mặt hàng..." oninput="renderProducts()" />
+      </div>
+      <div class="product-list" id="product-list"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: HISTORY + TON KHO -->
+  <div class="panel-right">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('history',this)">Lịch sử giao dịch</div>
+      <div class="tab" onclick="switchTab('tonkho',this)">Tồn kho</div>
+      <div class="tab" onclick="switchTab('huongdan',this)">❓ Hướng dẫn</div>
+    </div>
+
+    <!-- HISTORY TAB -->
+    <div id="tab-history">
+      <div class="history-header" style="margin-bottom:12px">
+        <div class="filter-bar">
+          <button class="filter-btn active" onclick="setFilter('all',this)">Tất cả</button>
+          <button class="filter-btn nhap-f" onclick="setFilter('NHẬP',this)">Nhập</button>
+          <button class="filter-btn xuat-f" onclick="setFilter('XUẤT',this)">Xuất</button>
+        </div>
+        <div class="action-btns">
+          <button class="act-btn" onclick="copyExcel()">📋 Copy ra Excel</button>
+          <label class="act-btn" style="cursor:pointer" title="Import file Excel (.xlsx) từ file gốc">📂 Import Excel<input type="file" accept=".xlsx" style="display:none" onchange="importExcel(this)"></label>
+          <button class="act-btn danger" onclick="clearAll()">🗑 Xóa hết</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:80px">GIỜ</th>
+              <th>MẶT HÀNG</th>
+              <th style="width:70px">LOẠI</th>
+              <th style="text-align:right;width:80px">SỐ LƯỢNG</th>
+              <th>GHI CHÚ</th>
+              <th style="width:36px"></th>
+            </tr>
+          </thead>
+          <tbody id="history-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TON KHO TAB -->
+    <div id="tab-tonkho" style="display:none">
+      <div class="summary-grid" id="tonkho-grid"></div>
+    </div>
+
+    <!-- HUONG DAN TAB -->
+    <div id="tab-huongdan" style="display:none;max-width:680px">
+      <div style="display:flex;flex-direction:column;gap:10px">
+
+        <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">Cách ghi giao dịch</div>
+
+        <div style="display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+          <div style="min-width:28px;height:28px;border-radius:50%;background:var(--green-light);color:var(--green-dark);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">1</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:4px">Tìm và chọn mặt hàng</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.6">Gõ tên vào ô tìm kiếm (VD: "ensure", "pedi", "nan"...) → danh sách lọc ngay. Nhấn vào tên sản phẩm để chọn — số tồn kho hiện tại hiển thị ngay cạnh.</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+          <div style="min-width:28px;height:28px;border-radius:50%;background:var(--green-light);color:var(--green-dark);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">2</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:4px">Điền số lượng và ghi chú</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.6">Nhập số lượng (chỉ nhập số dương). Ghi chú không bắt buộc — ghi nhanh như "gửi xe van", "xuat chi hang"...</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+          <div style="min-width:28px;height:28px;border-radius:50%;background:var(--green-light);color:var(--green-dark);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">3</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:6px">Nhấn Nhập kho hoặc Xuất kho</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.8">
+              <span style="display:inline-block;padding:2px 10px;border-radius:20px;background:var(--green-light);color:var(--green-dark);font-weight:600;font-size:12px;margin-right:6px">↓ NHẬP KHO</span>hàng về kho, tồn cộng thêm<br>
+              <span style="display:inline-block;padding:2px 10px;border-radius:20px;background:var(--orange-light);color:var(--orange-dark);font-weight:600;font-size:12px;margin-right:6px;margin-top:4px">↑ XUẤT KHO</span>hàng ra khỏi kho, tồn trừ đi
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin:10px 0 2px">Tính năng khác</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">📊 Tab Tồn kho</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6">Xem số lượng hiện tại của tất cả mặt hàng. Xanh = còn hàng, đỏ/cam = âm kho.</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">🔍 Lọc lịch sử</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6">Nhấn nút Nhập / Xuất / Tất cả ở trên bảng để lọc theo loại giao dịch.</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">📋 Copy ra Excel</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6">Nhấn "Copy ra Excel" → mở file gốc → chọn ô trống cuối bảng → Ctrl+V. Khớp đúng 4 cột.</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">📂 Import Excel</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6">Nhấn "Import Excel" → chọn file .xlsx → app tự đọc và cộng dồn, không trùng dữ liệu cũ.</div>
+          </div>
+        </div>
+
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:4px">💾 Dữ liệu lưu ở đâu?</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.6">Tự động lưu vào trình duyệt (localStorage). Tắt tab hay tắt máy vẫn không mất. Nhưng nếu xóa cache trình duyệt hoặc đổi máy thì mất — nên copy ra Excel định kỳ để backup.</div>
+        </div>
+
+        <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin:10px 0 2px">Phím tắt</div>
+
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)">
+            <span style="background:var(--bg);border:1px solid var(--border2);border-radius:4px;padding:3px 8px;font-size:12px;font-family:monospace">Ctrl</span>
+            <span style="color:var(--text3)">+</span>
+            <span style="background:var(--bg);border:1px solid var(--border2);border-radius:4px;padding:3px 8px;font-size:12px;font-family:monospace">Enter</span>
+            <span style="font-size:13px;color:var(--text2)">Nhập kho nhanh (sau khi đã chọn hàng và điền số lượng)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)">
+            <span style="background:var(--bg);border:1px solid var(--border2);border-radius:4px;padding:3px 8px;font-size:12px;font-family:monospace">Ctrl</span>
+            <span style="color:var(--text3)">+</span>
+            <span style="background:var(--bg);border:1px solid var(--border2);border-radius:4px;padding:3px 8px;font-size:12px;font-family:monospace">Shift</span>
+            <span style="color:var(--text3)">+</span>
+            <span style="background:var(--bg);border:1px solid var(--border2);border-radius:4px;padding:3px 8px;font-size:12px;font-family:monospace">Enter</span>
+            <span style="font-size:13px;color:var(--text2)">Xuất kho nhanh</span>
+          </div>
+        </div>
+
+        <div style="background:#E6F1FB;border-radius:var(--radius-sm);padding:12px 16px;font-size:13px;color:#185FA5;line-height:1.6;margin-top:4px">
+          <strong>Mẹo làm nhanh:</strong> Gõ 2-3 chữ để tìm hàng → Tab sang ô số lượng → điền số → Ctrl+Enter hoặc Ctrl+Shift+Enter. Không cần dùng chuột.
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ===== DATA =====
+var PRODUCTS = [
+  {g:"Ensure",items:["THÙNG ENSURE NƯỚC","LON ENSURE BỘT","LON ENSURE BỘT ÍT NGỌT","LON ENSURE BỘT KÈM 2 GÓI","LON ENSURE BỘT LỚN KÈM 4 GÓI"]},
+  {g:"Pediasure",items:["LON PEDI BỘT NHỎ","LON PEDI BỘT LỚN","LON PEDI BỘT LỚN KÈM 4 GÓI","LON PEDI BỘT KÈM 2 GÓI","THÙNG PEDI NHỎ","THÙNG PEDI LỚN","THÙNG PEDIASURE NÂU","LỐC SỮA PEDIASURE TÍM"]},
+  {g:"Similac",items:["LON SIMILAC 0+ NHỎ 800G","LON SIMILAC 0+ LỚN 1,6KG","LON SIMILAC 1+ NHỎ 800G","LON SIMILAC 1+ LỚN 1,6KG","LON SIMILAC 2+  NHỎ 800G","LON SIMILAC 2+ LỚN 1,6KG","LON SIMILAC 3+ NHỎ 800G","LON SIMILAC 3+ LỚN 1,6KG","LON SIMILAC 4+ NHỎ 800G","LON SIMILAC 4+ 1,6KG","LON SIMILAC MOM 800G","THÙNG 6 LON SIMILAC 2+ KÈM QUÀ","( PROJECT) LON SIMILAC 0+","( PROJECT) LON SIMILAC 0+  360","( PROJECT) LON SIMILAC 1+","( PROJECT) LON SIMILAC 2+","( PROJECT) LON SIMILAC 3+","( PROJECT) LON SIMILAC 4+"]},
+  {g:"Grow",items:["LON GROW 0+ NHỎ 800G","LON GROW 0+ LỚN 1,6KG","LON GROW 1+ NHỎ 800G","LON GROW 1+ LỚN 1,6KG","LON GROW 2+ NHỎ 800G","LON GROW 2+ LỚN 1,6KG","LON GROW 3+ NHỎ 800G","LON GROW 3+ LỚN 1,6KG","LON GROW 4+ NHỎ 800G","LON GROW 4+ LỚN 1,6 KG","LON GROW 6+ NHỎ 800G","THÙNG GROW NHỎ","THÙNG GROW LỚN","LỐC SỮA GROW"]},
+  {g:"NAN",items:["LON NAN 1 NHỎ 800G","LON NAN 1 LỚN 1,6KG","PRO LON NAN 1 NHỎ 800G","LON NAN 2 NHỎ 800G","LON NAN 2 LỚN 1,6KG","LON NAN A2 NHỎ 800G","LON NAN 3 NHỎ 800G","LON NAN 3 LỚN 1,6KG","PRO LON NAN 3 NHỎ 800G","LON NAN 4 NHỎ 800G","LON NAN 4 LỚN 1,6KG","COMBO 2 NAN 4 NHỎ 800G","COMBO 2 NAN 4 LỚN 1,6KG","COMBO 3 NAN 4 LỚN 1,6KG","COMBO 2 NAN4 1,5","COMBO 2 NAN4 NHỎ"]},
+  {g:"Enfa",items:["LON ENFA 1+ NHỎ 800G","LON ENFA 1+ LỚN 1,6KG","LON ENFA 2+ NHỎ 800G","LON ENFA 2+ LỚN 1,6KG","LON ENFA 3+ NHỎ 800G","LON ENFA 3+ LỚN 1,6 KG","LON ENFA 4+ NHỎ 800G","LON ENFA 4+ LỚN 1,6KG","LON ENFA 4+ KHỔNG LỒ 2,2KG","COMBO ENFA 2 LỚN 1 NHỎ"]},
+  {g:"Glucena / Vigor",items:["LON GLUCENA BỘT","LON GLUCENA BỘT KÈM 2 GÓI","LON GLUCENA BỘT LỚN KÈM 4 GÓI","THÙNG GLUCENA NƯỚC","THÙNG VIGOR NƯỚC"]},
+  {g:"Tã Huggies",items:["TÃ HUGGIES L60","TÃ HUGGIES L68","TÃ HUGGIES L68 DÁN","TÃ HUGGIES L100","TÃ HUGGIES M102","TÃ HUGGIES XL32","TÃ HUGGIES XL60","TÃ HUGGIES XL84","TÃ HUGGIES XXL48","TÃ HUGGIES XXL54","TÃ HUGGIES XXL76","TÃ HUGGIES XXXL22","TÃ HUGGIES XXXL28"]},
+  {g:"Tã khác",items:["TÃ M76","TÃ M46","TÃ S80","TÃ NB70","TÃ XXXL29","TÃ L44","TÃ BOBBY 1","TÃ BOBBY 2","TÃ BOBBY 3","TÃ BOBBY 4","COMBO 4 KHĂN ƯỚT","COMBO 6 KHĂN ƯỚT"]},
+  {g:"Quà tặng",items:["QUÀ TẶNG BÓNG MASSAGE","QUÀ TẶNG QUẠT","QUÀ TẶNG BÌNH NƯỚC","QUÀ TẶNG CÂN","QUÀ TẶNG MÁY HUYẾT ÁP","QUÀ TẶNG MÁY ĐUỔI MUỖI","QUÀ TẶNG MÁY ĐÁNH TRỨNG","QUÀ TẶNG KHÁC","QUÀ GẤU","QUÀ TẶNG LỐC SIMILAC"]}
+];
+
+var selectedProduct = null;
+var currentFilter = 'all';
+
+// Load from localStorage
+function loadData() {
+  try { return JSON.parse(localStorage.getItem('kho_sua_v1') || '[]'); } catch(e){ return []; }
+}
+function saveData(d) {
+  localStorage.setItem('kho_sua_v1', JSON.stringify(d));
+}
+
+function now() {
+  var d = new Date();
+  var p = function(n){return n<10?'0'+n:n};
+  return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+}
+
+// ===== PRODUCT LIST =====
+function renderProducts() {
+  var q = document.getElementById('search').value.toLowerCase().trim();
+  var list = document.getElementById('product-list');
+  var data = loadData();
+  var html = '';
+
+  PRODUCTS.forEach(function(grp) {
+    var filtered = grp.items.filter(function(p){ return !q || p.toLowerCase().includes(q); });
+    if (!filtered.length) return;
+    if (!q) html += '<div class="group-label">'+grp.g+'</div>';
+    filtered.forEach(function(p) {
+      var stock = getStock(p, data);
+      var cls = stock > 0 ? 'stock-pos' : (stock < 0 ? 'stock-neg' : 'stock-zero');
+      var sel = selectedProduct === p ? ' selected' : '';
+      html += '<div class="product-item'+sel+'" onclick="selectProduct(\''+p.replace(/'/g,"\\'")+'\')">';
+      html += '<span class="product-name">'+p+'</span>';
+      html += '<span class="product-stock '+cls+'">'+stock+'</span>';
+      html += '</div>';
+    });
+  });
+
+  if (!html) html = '<div class="empty">Không tìm thấy</div>';
+  list.innerHTML = html;
+}
+
+function getStock(product, data) {
+  return data.reduce(function(s, e) {
+    if (e.product === product) return s + (e.type === 'NHẬP' ? e.qty : -e.qty);
+    return s;
+  }, 0);
+}
+
+function selectProduct(p) {
+  selectedProduct = p;
+  var el = document.getElementById('selected-display');
+  el.textContent = p;
+  el.classList.remove('placeholder');
+  document.getElementById('btn-nhap').disabled = false;
+  document.getElementById('btn-xuat').disabled = false;
+  document.getElementById('qty').focus();
+  renderProducts();
+}
+
+// ===== ADD ENTRY =====
+function addEntry(type) {
+  if (!selectedProduct) { toast('Chọn mặt hàng trước!', 'err'); return; }
+  var qty = parseInt(document.getElementById('qty').value);
+  if (!qty || qty <= 0) { toast('Nhập số lượng hợp lệ!', 'err'); return; }
+  var note = document.getElementById('note').value.trim();
+
+  var data = loadData();
+  data.unshift({
+    id: Date.now(),
+    time: now(),
+    product: selectedProduct,
+    type: type,
+    qty: qty,
+    note: note
+  });
+  saveData(data);
+
+  document.getElementById('qty').value = '';
+  document.getElementById('note').value = '';
+
+  renderAll();
+  toast((type==='NHẬP'?'✓ Nhập kho: ':'✓ Xuất kho: ')+selectedProduct+' ('+qty+')', type==='NHẬP'?'g':'o');
+}
+
+// ===== RENDER HISTORY =====
+function renderHistory() {
+  var data = loadData();
+  var filtered = currentFilter === 'all' ? data : data.filter(function(e){ return e.type === currentFilter; });
+  var tbody = document.getElementById('history-body');
+
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Chưa có giao dịch nào</td></tr>';
+    return;
+  }
+
+  // Group by date (dd/mm/yyyy)
+  var groups = {};
+  var groupOrder = [];
+  filtered.forEach(function(e) {
+    var day = e.time.split(' ')[0];
+    if (!groups[day]) { groups[day] = []; groupOrder.push(day); }
+    groups[day].push(e);
+  });
+
+  var rows = '';
+  groupOrder.forEach(function(day) {
+    var entries = groups[day];
+    var dayNhap = entries.filter(function(e){return e.type==='NHẬP';}).reduce(function(s,e){return s+e.qty;},0);
+    var dayXuat = entries.filter(function(e){return e.type==='XUẤT';}).reduce(function(s,e){return s+e.qty;},0);
+
+    // Day header row
+    rows += '<tr style="background:#F0F4FF">'+
+      '<td colspan="3" style="padding:8px 14px;font-weight:600;font-size:12px;color:#1A1A18;border-top:2px solid #C8C6BE">'+
+        '📅 '+day+
+      '</td>'+
+      '<td colspan="3" style="padding:8px 14px;text-align:right;border-top:2px solid #C8C6BE;font-size:12px">'+
+        (dayNhap>0?'<span style="color:var(--green);font-weight:600;margin-right:12px">↓ Nhập: +'+dayNhap+'</span>':'')+
+        (dayXuat>0?'<span style="color:var(--orange);font-weight:600">↑ Xuất: -'+dayXuat+'</span>':'')+
+      '</td>'+
+    '</tr>';
+
+    // Entry rows
+    entries.forEach(function(e) {
+      var qtyDisplay = e.type === 'NHẬP'
+        ? '<span class="qty-pos">+'+e.qty+'</span>'
+        : '<span class="qty-neg">-'+e.qty+'</span>';
+      var badge = e.type === 'NHẬP'
+        ? '<span class="badge badge-nhap">NHẬP</span>'
+        : '<span class="badge badge-xuat">XUẤT</span>';
+      var timeOnly = e.time.split(' ')[1] || '';
+      rows += '<tr>'+
+        '<td style="color:#A8A7A2;white-space:nowrap;font-size:12px;padding-left:20px">'+timeOnly+'</td>'+
+        '<td style="font-weight:500">'+e.product+'</td>'+
+        '<td>'+badge+'</td>'+
+        '<td style="text-align:right">'+qtyDisplay+'</td>'+
+        '<td style="color:#6B6A65">'+e.note+'</td>'+
+        '<td><button class="del-btn" onclick="deleteEntry('+e.id+')" title="Xóa">✕</button></td>'+
+      '</tr>';
+    });
+  });
+
+  tbody.innerHTML = rows;
+}
+
+// ===== TON KHO =====
+function renderTonKho() {
+  var data = loadData();
+  var allProducts = [];
+  PRODUCTS.forEach(function(g){ g.items.forEach(function(p){ allProducts.push(p); }); });
+
+  var rows = [];
+  allProducts.forEach(function(p) {
+    var nhap = data.filter(function(e){return e.product===p && e.type==='NHẬP';}).reduce(function(s,e){return s+e.qty;},0);
+    var xuat = data.filter(function(e){return e.product===p && e.type==='XUẤT';}).reduce(function(s,e){return s+e.qty;},0);
+    var ton = nhap - xuat;
+    if (nhap===0 && xuat===0) return;
+    rows.push({p:p, nhap:nhap, xuat:xuat, ton:ton});
+  });
+
+  rows.sort(function(a,b){ return b.ton - a.ton; });
+
+  if (!rows.length) {
+    document.getElementById('tonkho-grid').innerHTML = '<div class="empty">Chưa có dữ liệu</div>';
+    return;
+  }
+
+  var totalNhap = rows.reduce(function(s,r){return s+r.nhap;},0);
+  var totalXuat = rows.reduce(function(s,r){return s+r.xuat;},0);
+  var totalTon  = rows.reduce(function(s,r){return s+r.ton;},0);
+
+  var html = '';
+
+  // Summary cards
+  html += '<div style="display:flex;gap:12px;margin-bottom:20px">';
+  html += '<div style="flex:1;background:#E1F5EE;border-radius:var(--radius);padding:14px 18px"><div style="font-size:11px;font-weight:700;color:#0F6E56;letter-spacing:.07em;margin-bottom:6px">TỔNG NHẬP</div><div style="font-size:28px;font-weight:700;color:#1D9E75">'+totalNhap+'</div></div>';
+  html += '<div style="flex:1;background:#FAECE7;border-radius:var(--radius);padding:14px 18px"><div style="font-size:11px;font-weight:700;color:#993C1D;letter-spacing:.07em;margin-bottom:6px">TỔNG XUẤT</div><div style="font-size:28px;font-weight:700;color:#D85A30">'+totalXuat+'</div></div>';
+  html += '<div style="flex:1;background:'+(totalTon>=0?'#E1F5EE':'#FAECE7')+';border-radius:var(--radius);padding:14px 18px"><div style="font-size:11px;font-weight:700;color:'+(totalTon>=0?'#0F6E56':'#993C1D')+';letter-spacing:.07em;margin-bottom:6px">TỒN KHO RÒNG</div><div style="font-size:28px;font-weight:700;color:'+(totalTon>=0?'#1D9E75':'#D85A30')+'">'+totalTon+'</div></div>';
+  html += '</div>';
+
+  // Table
+  html += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">';
+  html += '<table style="width:100%;border-collapse:collapse">';
+  html += '<thead><tr style="background:var(--bg)">';
+  html += '<th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.07em;border-bottom:1px solid var(--border)">MẶT HÀNG</th>';
+  html += '<th style="padding:10px 16px;text-align:right;font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:.07em;border-bottom:1px solid var(--border);width:100px">NHẬP</th>';
+  html += '<th style="padding:10px 16px;text-align:right;font-size:11px;font-weight:700;color:#D85A30;letter-spacing:.07em;border-bottom:1px solid var(--border);width:100px">XUẤT</th>';
+  html += '<th style="padding:10px 16px;text-align:right;font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.07em;border-bottom:1px solid var(--border);width:110px">TỒN KHO</th>';
+  html += '</tr></thead><tbody>';
+
+  rows.forEach(function(r, i) {
+    var tonColor = r.ton > 0 ? '#1D9E75' : (r.ton < 0 ? '#D85A30' : 'var(--text3)');
+    var bg = i % 2 === 0 ? 'var(--surface)' : '#FAFAF8';
+    html += '<tr style="background:'+bg+'">';
+    html += '<td style="padding:10px 16px;font-size:13px;font-weight:500;color:var(--text);border-bottom:1px solid var(--border);white-space:nowrap">'+r.p+'</td>';
+    html += '<td style="padding:10px 16px;text-align:right;font-size:13px;font-weight:500;color:#1D9E75;border-bottom:1px solid var(--border);white-space:nowrap">+'+r.nhap+'</td>';
+    html += '<td style="padding:10px 16px;text-align:right;font-size:13px;font-weight:500;color:#D85A30;border-bottom:1px solid var(--border);white-space:nowrap">-'+r.xuat+'</td>';
+    html += '<td style="padding:10px 16px;text-align:right;font-size:16px;font-weight:700;color:'+tonColor+';border-bottom:1px solid var(--border);white-space:nowrap">'+r.ton+'</td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  document.getElementById('tonkho-grid').innerHTML = html;
+}
+
+// ===== HEADER STATS =====
+function renderHeaderStats() {
+  var data = loadData();
+  var d = new Date();
+  var pad = function(n){return n<10?'0'+n:n};
+  var todayStr = pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear();
+
+  var todayData = data.filter(function(e){ return e.time.startsWith(todayStr); });
+  var nhapToday = todayData.filter(function(e){return e.type==='NHẬP';}).reduce(function(s,e){return s+e.qty;},0);
+  var xuatToday = todayData.filter(function(e){return e.type==='XUẤT';}).reduce(function(s,e){return s+e.qty;},0);
+
+  document.getElementById('h-nhap').textContent = nhapToday;
+  document.getElementById('h-xuat').textContent = xuatToday;
+  document.getElementById('h-gd').textContent = data.length;
+}
+
+// ===== ACTIONS =====
+function deleteEntry(id) {
+  var data = loadData().filter(function(e){ return e.id !== id; });
+  saveData(data);
+  renderAll();
+  toast('Đã xóa giao dịch', 'o');
+}
+
+function clearAll() {
+  if (!confirm('Xóa toàn bộ lịch sử giao dịch? Không thể hoàn tác.')) return;
+  saveData([]);
+  renderAll();
+  toast('Đã xóa hết dữ liệu', 'err');
+}
+
+function copyExcel() {
+  var data = loadData();
+  if (!data.length) { toast('Chưa có dữ liệu', 'err'); return; }
+  var lines = data.slice().reverse().map(function(e){
+    return e.time+'\t'+e.product+'\t'+e.note+'\t'+(e.type==='NHẬP'?e.qty:-e.qty);
+  });
+  var text = 'THỜI GIAN\tMẶT HÀNG\tGHI CHÚ GIAO DỊCH\tSỐ LƯỢNG\n'+lines.join('\n');
+  navigator.clipboard.writeText(text).then(function(){
+    toast('✓ Đã copy! Mở Excel → Ctrl+V', 'g');
+  }).catch(function(){
+    toast('Lỗi copy, thử lại!', 'err');
+  });
+}
+
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
+  el.classList.add('active');
+  renderHistory();
+}
+
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById('tab-history').style.display = tab==='history'?'block':'none';
+  document.getElementById('tab-tonkho').style.display = tab==='tonkho'?'block':'none';
+  document.getElementById('tab-huongdan').style.display = tab==='huongdan'?'block':'none';
+  if (tab==='tonkho') renderTonKho();
+}
+
+// ===== TOAST =====
+function toast(msg, type) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show '+type;
+  clearTimeout(el._t);
+  el._t = setTimeout(function(){ el.className = ''; }, 2500);
+}
+
+
+// ===== IMPORT EXCEL (SheetJS) =====
+function importExcel(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb = XLSX.read(e.target.result, {type:'array', cellDates:true});
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:false, dateNF:'DD/MM/YYYY HH:mm:ss'});
+      
+      var imported = [];
+      var idx = 1;
+      rows.slice(1).forEach(function(row) {
+        var timeStr = row[0], product = row[1], note = row[2], qtyStr = row[3];
+        if (!product || qtyStr === undefined || qtyStr === '') return;
+        var qty = parseFloat(String(qtyStr).replace(',','.'));
+        if (isNaN(qty)) return;
+        product = String(product).trim();
+        note = note ? String(note).trim() : '';
+        var qtyAbs = Math.abs(Math.round(qty));
+        var txtype = qty >= 0 ? 'NHẬP' : 'XUẤT';
+        // Parse time
+        var timeDisplay = timeStr || new Date().toLocaleDateString('vi-VN');
+        imported.push({
+          id: Date.now() + idx,
+          time: timeDisplay,
+          product: product,
+          note: note,
+          type: txtype,
+          qty: qtyAbs
+        });
+        idx++;
+      });
+
+      if (!imported.length) { toast('Không đọc được dữ liệu từ file!', 'err'); return; }
+      
+      imported.reverse();
+      var existing = loadData();
+      // Merge: keep existing, add imported that don't overlap by id
+      var existingIds = new Set(existing.map(function(e){return e.id}));
+      var newEntries = imported.filter(function(e){return !existingIds.has(e.id)});
+      var merged = existing.concat(newEntries);
+      // Sort newest first by id
+      merged.sort(function(a,b){return b.id - a.id});
+      saveData(merged);
+      renderAll();
+      toast('✓ Đã import ' + imported.length + ' giao dịch từ Excel!', 'g');
+      input.value = '';
+    } catch(err) {
+      toast('Lỗi đọc file: ' + err.message, 'err');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ===== KEYBOARD SHORTCUT =====
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    if (!document.getElementById('btn-nhap').disabled) addEntry('NHẬP');
+  }
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'Enter') {
+    if (!document.getElementById('btn-xuat').disabled) addEntry('XUẤT');
+  }
+});
+
+function renderAll() {
+  renderProducts();
+  renderHistory();
+  renderHeaderStats();
+}
+
+
+// ===== PRE-LOADED DATA FROM EXCEL =====
+(function() {
+  var existing = localStorage.getItem('kho_sua_v1');
+  if (!existing || existing === '[]') {
+    var imported = [{"id": 1782220486751, "time": "23/06/2026 13:14:46", "product": "PRO LON NAN 1 NHỎ 800G", "note": "xxuathnk", "type": "XUẤT", "qty": 150}, {"id": 1782220486158, "time": "23/06/2026 13:14:46", "product": "LON NAN 2 NHỎ 800G", "note": "xxuathnk", "type": "XUẤT", "qty": 200}, {"id": 1782220485785, "time": "23/06/2026 13:14:45", "product": "LON NAN 1 NHỎ 800G", "note": "xxuathnk", "type": "XUẤT", "qty": 205}, {"id": 1782220484826, "time": "23/06/2026 13:14:44", "product": "LON PEDI BỘT LỚN", "note": "xxuathnk", "type": "XUẤT", "qty": 80}, {"id": 1782215791710, "time": "23/06/2026 11:56:31", "product": "LON ENSURE BỘT ÍT NGỌT", "note": "xxuatchi nhan", "type": "XUẤT", "qty": 60}, {"id": 1782215777381, "time": "23/06/2026 11:56:17", "product": "( PROJECT) LON SIMILAC 0+", "note": "Gửi xe van 250 si0+ pro 800", "type": "NHẬP", "qty": 250}, {"id": 1782215776329, "time": "23/06/2026 11:56:16", "product": "LON SIMILAC 1+ NHỎ 800G", "note": "Gửi xe van 250 si1+ 800", "type": "NHẬP", "qty": 250}, {"id": 1782202707420, "time": "23/06/2026 08:18:27", "product": "THÙNG GROW NHỎ", "note": "Gửi xe van 60 grow 110", "type": "NHẬP", "qty": 60}, {"id": 1782153337624, "time": "22/06/2026 18:35:37", "product": "THÙNG ENSURE NƯỚC", "note": "Xe đi GV 36 en nước in bb đưa tx", "type": "XUẤT", "qty": 36}, {"id": 1782149912438, "time": "22/06/2026 17:38:32", "product": "LON PEDI BỘT NHỎ", "note": "Xe đi Dĩ An 80 pedi 800", "type": "XUẤT", "qty": 80}, {"id": 1782153334628, "time": "22/06/2026 18:35:34", "product": "LON PEDI BỘT LỚN", "note": "Xe đi Thủ Đức 24 en nước 91 pedi 1.6 in bb đưa tx", "type": "XUẤT", "qty": 91}, {"id": 1782153332744, "time": "22/06/2026 18:35:32", "product": "THÙNG ENSURE NƯỚC", "note": "Xe đi Thủ Đức 24 en nước 91 pedi 1.6 in bb đưa tx", "type": "XUẤT", "qty": 24}, {"id": 1782202704510, "time": "23/06/2026 08:18:24", "product": "THÙNG GROW NHỎ", "note": "Gửi xe van 51 grow 110", "type": "NHẬP", "qty": 51}, {"id": 1782142700027, "time": "22/06/2026 15:38:19", "product": "LON ENSURE BỘT ÍT NGỌT", "note": "xxuat chi nhan", "type": "XUẤT", "qty": 60}, {"id": 1782131473864, "time": "22/06/2026 12:31:13", "product": "THÙNG ENSURE NƯỚC", "note": "xuat chi hanh", "type": "XUẤT", "qty": 54}, {"id": 1781989629942, "time": "20/06/2026 21:07:09", "product": "LON PEDI BỘT NHỎ", "note": "Gửi xe 83 80 pedi 800", "type": "NHẬP", "qty": 80}, {"id": 1781989629239, "time": "20/06/2026 21:07:09", "product": "LON PEDI BỘT LỚN", "note": "Gửi xe 83 171 pedi 1.6", "type": "NHẬP", "qty": 171}, {"id": 1781989479301, "time": "20/06/2026 21:04:39", "product": "THÙNG ENSURE NƯỚC", "note": "Gửi xe 83 164 en nước", "type": "NHẬP", "qty": 164}, {"id": 1781966462651, "time": "20/06/2026 14:41:02", "product": "TÃ HUGGIES XXXL28", "note": "xuat vsm", "type": "XUẤT", "qty": 100}, {"id": 1781972285513, "time": "20/06/2026 16:18:05", "product": "TÃ M76", "note": "xuat vsm", "type": "XUẤT", "qty": 300}, {"id": 1781966424105, "time": "20/06/2026 14:40:24", "product": "COMBO 3 NAN 4 LỚN 1,6KG", "note": "Xe đi Vĩnh Lộc 29 cb nan 4 kèm xấp giấy", "type": "XUẤT", "qty": 29}, {"id": 1781989476476, "time": "20/06/2026 21:04:36", "product": "TÃ HUGGIES XXXL28", "note": "Gửi xe 83 180 XXL28", "type": "NHẬP", "qty": 180}, {"id": 1781989475925, "time": "20/06/2026 21:04:35", "product": "TÃ M76", "note": "Gửi xe 83 540 M76", "type": "NHẬP", "qty": 540}, {"id": 1781951491415, "time": "20/06/2026 10:31:31", "product": "LON ENSURE BỘT ÍT NGỌT", "note": "Năm Châu ghé lấy 40 pedi 1.6 18 en ít ngọt", "type": "XUẤT", "qty": 18}, {"id": 1781951490659, "time": "20/06/2026 10:31:30", "product": "LON PEDI BỘT LỚN", "note": "Năm Châu ghé lấy 40 pedi 1.6 18 en ít ngọt", "type": "XUẤT", "qty": 40}, {"id": 1781892022926, "time": "19/06/2026 18:00:22", "product": "COMBO 3 NAN 4 LỚN 1,6KG", "note": "Gửi xe 44 29 cb nan 4 kèm 1 sấp giấy", "type": "NHẬP", "qty": 29}, {"id": 1781892018675, "time": "19/06/2026 18:00:18", "product": "PRO LON NAN 1 NHỎ 800G", "note": "Gửi xe 44 150 nan 1 pro 800", "type": "NHẬP", "qty": 150}, {"id": 1781892019156, "time": "19/06/2026 18:00:19", "product": "LON NAN 2 NHỎ 800G", "note": "Gửi xe 44 200 nan 2 800", "type": "NHẬP", "qty": 200}, {"id": 1781892020087, "time": "19/06/2026 18:00:20", "product": "LON NAN 1 NHỎ 800G", "note": "Gửi xe 44 205 nan 1 800", "type": "NHẬP", "qty": 205}, {"id": 1781873505655, "time": "19/06/2026 12:51:45", "product": "LON ENSURE BỘT", "note": "xuat chi hang", "type": "XUẤT", "qty": 339}, {"id": 1781873504824, "time": "19/06/2026 12:51:44", "product": "LON SIMILAC 1+ NHỎ 800G", "note": "xuat chi hang", "type": "XUẤT", "qty": 225}, {"id": 1781873503975, "time": "19/06/2026 12:51:43", "product": "LON PEDI BỘT LỚN", "note": "xuat chi hang", "type": "XUẤT", "qty": 228}, {"id": 1781873497823, "time": "19/06/2026 12:51:37", "product": "LON ENSURE BỘT ÍT NGỌT", "note": "xuat chi hang", "type": "XUẤT", "qty": 15}, {"id": 1781873496641, "time": "19/06/2026 12:51:36", "product": "LON PEDI BỘT NHỎ", "note": "xuat chi hang", "type": "XUẤT", "qty": 190}, {"id": 1781873495799, "time": "19/06/2026 12:51:35", "product": "THÙNG ENSURE NƯỚC", "note": "xuat chi hang", "type": "XUẤT", "qty": 212}, {"id": 1781874437781, "time": "19/06/2026 13:07:17", "product": "THÙNG ENSURE NƯỚC", "note": "Gửi xe 25 18 en nước", "type": "NHẬP", "qty": 18}, {"id": 1781873559129, "time": "19/06/2026 12:52:39", "product": "THÙNG ENSURE NƯỚC", "note": "Xe di Q8 70 en nước", "type": "XUẤT", "qty": 70}, {"id": 1781804051982, "time": "18/06/2026 17:34:11", "product": "THÙNG ENSURE NƯỚC", "note": "xuat cmt8", "type": "XUẤT", "qty": 54}, {"id": 1781857818585, "time": "19/06/2026 08:30:18", "product": "THÙNG ENSURE NƯỚC", "note": "Gửi xe 76 110 en nước", "type": "NHẬP", "qty": 110}, {"id": 1781783282882, "time": "18/06/2026 11:48:02", "product": "THÙNG ENSURE NƯỚC", "note": "gửi xe bố già 300t en nuoc", "type": "NHẬP", "qty": 300}, {"id": 1781783129996, "time": "18/06/2026 11:45:29", "product": "LON ENSURE BỘT ÍT NGỌT", "note": "xuat ba vi", "type": "XUẤT", "qty": 204}, {"id": 1781783126036, "time": "18/06/2026 11:45:25", "product": "THÙNG ENSURE NƯỚC", "note": "xuat ba vi", "type": "XUẤT", "qty": 55}, {"id": 1781718695626, "time": "17/06/2026 17:51:35", "product": "LON ENSURE BỘT ÍT NGỌT", "note": "Xe đi Vĩnh Lộc 30 en ít ngọt", "type": "XUẤT", "qty": 30}, {"id": 1781718693877, "time": "17/06/2026 17:51:33", "product": "LON ENSURE BỘT", "note": "Xe đi Vĩnh Lộc 9 en bột", "type": "XUẤT", "qty": 9}, {"id": 1781718691759, "time": "17/06/2026 17:51:31", "product": "THÙNG ENSURE NƯỚC", "note": "Xe đi Vĩnh Lộc 63 en nước", "type": "XUẤT", "qty": 63}, {"id": 1781718689057, "time": "17/06/2026 17:51:29", "product": "THÙNG VIGOR NƯỚC", "note": "Xe đi Vĩnh Lộc 47 vigor", "type": "XUẤT", "qty": 47}, {"id": 1781718687615, "time": "17/06/2026 17:51:27", "product": "THÙNG ENSURE NƯỚC", "note": "Gửi xe van 25 80 en nước", "type": "NHẬP", "qty": 80}, {"id": 1781710073177, "time": "17/06/2026 15:27:53", "product": "LON GROW 1+ NHỎ 800G", "note": "xuất cô hồng", "type": "XUẤT", "qty": 12}, {"id": 1781710007552, "time": "17/06/2026 15:26:47", "product": "( PROJECT) LON SIMILAC 0+", "note": "xuat tuan hl", "type": "XUẤT", "qty": 32}, {"id": 1781710006845, "time": "17/06/2026 15:26:46", "product": "LON SIMILAC 0+ NHỎ 800G", "note": "xuat tuan hl", "type": "XUẤT", "qty": 105}, {"id": 1781710006061, "time": "17/06/2026 15:26:46", "product": "LON SIMILAC 1+ NHỎ 800G", "note": "xuat tuan hl", "type": "XUẤT", "qty": 240}, {"id": 1781708618431, "time": "17/06/2026 15:03:38", "product": "LON PEDI BỘT NHỎ", "note": "xuat anc", "type": "XUẤT", "qty": 150}, {"id": 1781708617939, "time": "17/06/2026 15:03:37", "product": "LON PEDI BỘT LỚN", "note": "xuat anc", "type": "XUẤT", "qty": 84}, {"id": 1781708617181, "time": "17/06/2026 15:03:37", "product": "( PROJECT) LON SIMILAC 0+", "note": "xuat anc", "type": "XUẤT", "qty": 90}, {"id": 1781708615220, "time": "17/06/2026 15:03:35", "product": "THÙNG ENSURE NƯỚC", "note": "xuat anc", "type": "XUẤT", "qty": 107}, {"id": 1781708602822, "time": "17/06/2026 15:03:22", "product": "THÙNG ENSURE NƯỚC", "note": "xuat chi hang", "type": "XUẤT", "qty": 376}, {"id": 1781700353929, "time": "17/06/2026 12:45:53", "product": "LON ENSURE BỘT", "note": "xuat xe thành danh", "type": "XUẤT", "qty": 345}, {"id": 1781699740650, "time": "17/06/2026 12:35:40", "product": "LON SIMILAC 1+ NHỎ 800G", "note": "Gửi xe 25 465 si1+ 800", "type": "NHẬP", "qty": 465}, {"id": 1781649152908, "time": "16/06/2026 22:32:32", "product": "LON ENSURE BỘT", "note": "Gửi xe van tối 684 en bột", "type": "NHẬP", "qty": 684}, {"id": 1781649154525, "time": "16/06/2026 22:32:34", "product": "LON PEDI BỘT LỚN", "note": "Gửi xe van tối 352 pedi 1.6", "type": "NHẬP", "qty": 352}, {"id": 1781649155507, "time": "16/06/2026 22:32:35", "product": "LON ENSURE BỘT ÍT NGỌT", "note": "Gửi xe van tối 105 en ít ngọt", "type": "NHẬP", "qty": 105}, {"id": 1781649156252, "time": "16/06/2026 22:32:36", "product": "LON ENSURE BỘT ÍT NGỌT", "note": "Gửi xe van 252 en ít ngọt", "type": "NHẬP", "qty": 252}, {"id": 1781622788746, "time": "16/06/2026 15:13:08", "product": "TÃ HUGGIES XXL54", "note": "xuat anh hien", "type": "XUẤT", "qty": 228}, {"id": 1781622788512, "time": "16/06/2026 15:13:08", "product": "TÃ HUGGIES L100", "note": "xuat anh hien", "type": "XUẤT", "qty": 82}, {"id": 1781620854696, "time": "16/06/2026 14:40:54", "product": "THÙNG ENSURE NƯỚC", "note": "xuat anh duc", "type": "XUẤT", "qty": 128}, {"id": 1781620869192, "time": "16/06/2026 14:41:09", "product": "LON PEDI BỘT LỚN KÈM 4 GÓI", "note": "xuat chi nhan", "type": "XUẤT", "qty": 135}, {"id": 1781620866205, "time": "16/06/2026 14:41:06", "product": "LON ENSURE BỘT ÍT NGỌT", "note": "xuat chi nhan", "type": "XUẤT", "qty": 216}, {"id": 1781620862771, "time": "16/06/2026 14:41:02", "product": "LON ENSURE BỘT", "note": "xuat chi nhan", "type": "XUẤT", "qty": 1}, {"id": 1781620858016, "time": "16/06/2026 14:40:57", "product": "THÙNG ENSURE NƯỚC", "note": "xuat chi nhan", "type": "XUẤT", "qty": 64}, {"id": 1781620834993, "time": "16/06/2026 14:40:34", "product": "THÙNG ENSURE NƯỚC", "note": "Gửi xe van 70 en lước", "type": "NHẬP", "qty": 70}, {"id": 1781603029707, "time": "16/06/2026 09:43:49", "product": "LON ENSURE BỘT", "note": "Sáng mai xuất Bùi Xuân Phái 81 en nước 6 en bột thu 74tr656", "type": "XUẤT", "qty": 6}, {"id": 1781603151087, "time": "16/06/2026 09:45:51", "product": "THÙNG ENSURE NƯỚC", "note": "Sáng mai xuất Bùi Xuân Phái 81 en nước 6 en bột thu 74tr656", "type": "XUẤT", "qty": 81}, {"id": 1781561136956, "time": "15/06/2026 22:05:36", "product": "THÙNG ENSURE NƯỚC", "note": "Gửi xe van tối 73 en nucớ", "type": "NHẬP", "qty": 73}, {"id": 1781560290569, "time": "15/06/2026 21:51:30", "product": "TÃ HUGGIES XXL54", "note": "kk15.6", "type": "NHẬP", "qty": 772}, {"id": 1781560265060, "time": "15/06/2026 21:51:05", "product": "TÃ HUGGIES L100", "note": "kk15.6", "type": "NHẬP", "qty": 82}, {"id": 1781560264446, "time": "15/06/2026 21:51:04", "product": "TÃ HUGGIES XL84", "note": "kk15.6", "type": "NHẬP", "qty": 126}, {"id": 1781560263398, "time": "15/06/2026 21:51:03", "product": "LON PEDI BỘT LỚN KÈM 4 GÓI", "note": "kk15.6", "type": "NHẬP", "qty": 135}, {"id": 1781560262367, "time": "15/06/2026 21:51:02", "product": "LON GROW 1+ NHỎ 800G", "note": "kk15.6", "type": "NHẬP", "qty": 60}, {"id": 1781560261681, "time": "15/06/2026 21:51:01", "product": "LON ENSURE BỘT ÍT NGỌT", "note": "kk15.6", "type": "NHẬP", "qty": 246}, {"id": 1781560260819, "time": "15/06/2026 21:51:00", "product": "( PROJECT) LON SIMILAC 0+", "note": "kk15.6", "type": "NHẬP", "qty": 122}, {"id": 1781560260106, "time": "15/06/2026 21:51:00", "product": "LON ENSURE BỘT", "note": "kk15.6", "type": "NHẬP", "qty": 16}, {"id": 1781560259180, "time": "15/06/2026 21:50:59", "product": "LON SIMILAC 0+ NHỎ 800G", "note": "kk15.6", "type": "NHẬP", "qty": 105}, {"id": 1781560258574, "time": "15/06/2026 21:50:58", "product": "LON PEDI BỘT NHỎ", "note": "kk15.6", "type": "NHẬP", "qty": 340}, {"id": 1781560257424, "time": "15/06/2026 21:50:57", "product": "THÙNG VIGOR NƯỚC", "note": "kk15.6", "type": "NHẬP", "qty": 47}, {"id": 1781560256819, "time": "15/06/2026 21:50:56", "product": "THÙNG ENSURE NƯỚC", "note": "kk15.6", "type": "NHẬP", "qty": 613}];
+    localStorage.setItem('kho_sua_v1', JSON.stringify(imported));
+  }
+})();
+
+// INIT
+renderAll();
+</script>
+</body>
+</html>
